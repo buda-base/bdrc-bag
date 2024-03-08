@@ -33,8 +33,7 @@ def test_bag(is_daemon: bool):
     assert Path.exists(test_bag_work)
     # Make a destination
     with TemporaryDirectory() as td:
-        bag_dst = Path(td) / "bag"
-        os.makedirs(bag_dst, exist_ok=True)
+        bag_dst = Path(td)
         bag_ops.bag(str(test_bag_work), str(bag_dst), True, in_daemon=is_daemon)
         assert Path.exists(bag_dst)
         assert bag_dst.is_dir()
@@ -51,19 +50,23 @@ def test_bag(is_daemon: bool):
 
 @pytest.mark.parametrize("is_daemon", [True, False])
 def test_debag(is_daemon: bool):
+
+    bag_artifact = "Work1.bag.zip"
     assert Path.exists(test_bag_work)
     # Make a destination
     with TemporaryDirectory() as td:
-        bag_dst = Path(td) / "bag"
+        bag_dst = Path(td)
         bag_ops.bag(str(test_bag_work), str(bag_dst), True, in_daemon=False)
         assert Path.exists(bag_dst)
         assert bag_dst.is_dir()
-        assert bag_dst / "data" / "w1-ig1" / "ig10001.txt"
 
+        created_bag_path: Path = bag_dst / bag_artifact
+        assert Path.exists(created_bag_path)
+        # The above created 'Work1.bag.zip" in bag_dst
         # Unbag it
         with TemporaryDirectory() as td2:
-            bag_ops.debag(str(bag_dst), td2, is_daemon)
-            assert Path.exists(Path(td2) / "w1-ig1" / "ig10001.txt")
-            assert Path.exists(Path(td2) / "w1-ig1" / "ig10002.txt")
-            assert Path.exists(Path(td2) / "w1-ig1" / "ig10003.txt")
-            assert not Path.exists(Path(td2) / "data")
+            bag_ops.debag(str(created_bag_path), td2, is_daemon)
+            extracted_bag_images = Path(td2 , "Work1" , "images")
+            for i in range(1,3):
+                assert Path.exists(extracted_bag_images / "w1-ig1" / f"ig1{i:0>4}.txt")
+            assert Path.exists(Path(td2) / "bags")

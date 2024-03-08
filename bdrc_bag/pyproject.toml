@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 # Since we're using setuptools, this is all specified in setup.py
 [project]
 name = "bdrc-bag"
-version = "0.0.02"
+version = "0.0.03"
 authors = [
     { name="Jim Katz", email="jim@tbrc.org" },
 ]
