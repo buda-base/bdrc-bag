@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# Since we're using setuptools, this is all specified in setup.py
+[project]
+name = "bdrc-bag"
+version = "0.0.02"
+authors = [
+    { name="Jim Katz", email="jim@tbrc.org" },
+]
+description = "Create and extract BDRC bags"
+readme = "README.md"
+requires-python = ">=3.8"
+# Make sure this matches requirements.txt. See build-bag.sh
+dependencies = ['bdrc-util', 'bagit']
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+
+# [ In setup, these are called entry_points, but not here ]
+[project.scripts]
+bdrc-bag = "bdrc_bag.bag_main:main"
+#
+# None, right now, until archive-ops becomes public
+#[project.urls]
+#Homepage = "https://github.com/buda-base/archive-ops"
+#Issues = "https://github.com/pypa/sampleproject/issues"
