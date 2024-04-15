@@ -236,7 +236,8 @@ def debag(bag_arcname: str, output_path_p: str, in_daemon: bool = True) -> [Path
 # --internal-sender-description INTERNAL_SENDER_DESCRIPTION
 # --bagit-profile-identifier BAGIT_PROFILE_IDENTIFIER
 
-def bag(bag_src: str, bag_dest: str, preserve_source: bool, in_daemon: bool):
+def bag(bag_src: str, bag_dest: str, preserve_source: bool, in_daemon: bool, do_append: bool = False,
+        append_dest: str = None):
     """
     Creates a test_bag from the source
     :param bag_src: Path to work to test_bag. Can be a pre-existing test_bag
@@ -246,7 +247,7 @@ def bag(bag_src: str, bag_dest: str, preserve_source: bool, in_daemon: bool):
     :return:
     """
 
-    n_processes:int  = 1 if in_daemon else 6
+    n_processes: int = 1 if in_daemon else 6
     # name of destination, under bag_dest
     dest_base_name = Path(bag_src).name
 
@@ -260,8 +261,8 @@ def bag(bag_src: str, bag_dest: str, preserve_source: bool, in_daemon: bool):
             if preserve_source:
                 # should result in bag_temp_dir/dest_base_name
                 save_dir: Path = Path(bag_temp_dir, dest_base_name)
-                bag_src: str = shutil.copytree(bag_src, save_dir )
-                logging.debug(f"Preserving source in {bag_src}")
+                bag_src: str = shutil.copytree(bag_src, save_dir)
+                logging.info(f"Preserving source in {bag_src}")
             dest_bag = bagit.make_bag(bag_src, processes=n_processes, checksums=['sha512'])
 
         bag_errors: [] = []
@@ -274,18 +275,19 @@ def bag(bag_src: str, bag_dest: str, preserve_source: bool, in_daemon: bool):
         dest_bag.save(manifests=True, processes=n_processes)
 
         # Create a zip that contains top level folders named WXXXX.test_bag
-        archive_root: Path = Path(dest_base_name + BAG_SRC_SUFFIX)
 
-        output_archive_path: Path = Path(bag_dest, archive_root.name + ".zip")
-        logging.debug(f"Creating {output_archive_path}")
+        archive_root: Path = Path(dest_base_name + BAG_SRC_SUFFIX )
+        output_archive_path: Path = Path(bag_dest, archive_root.name + ".zip") if not do_append else Path(append_dest)
+        archive_mode = 'w' if not do_append else 'a'
+        logging.info(f"{'Creating' if not do_append else 'Appending'} {output_archive_path}")
         # if os.path.exists(output_archive_path):
         #     os.remove(output_archive_path)
 
         # We don't bother with compression - it takes
         # too long, and the image files don't compress a lot
         try:
-            with zipfile.ZipFile(output_archive_path, 'w') as zf:
-                zf.write(bag_src, arcname=archive_root )
+            with zipfile.ZipFile(output_archive_path,  archive_mode) as zf:
+                zf.write(bag_src, arcname=archive_root)
                 for root, dirs, files in os.walk(bag_src):
                     # Write the dirs first
                     for zip_dir in dirs:
