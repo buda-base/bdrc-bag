@@ -2,10 +2,9 @@
 import os
 import tempfile
 from pathlib import Path
-from pprint import pp
+from tempfile import TemporaryDirectory
 
 import pytest
-from tempfile import TemporaryDirectory
 
 # This imports from site-packages
 # from bdrc_bag.src.bdrc_bag import bag_ops
@@ -55,7 +54,7 @@ def test_bag(is_daemon: bool):
         assert Path.exists(bag_dst)
         assert bag_dst.is_dir()
         assert bag_dst / "data" / "w1-ig1" / "ig10001.txt"
-        # Unbag it
+        # unbag it
         with TemporaryDirectory() as td2:
             bag_ops.debag(str(bag_dst / "Work1.bag.zip"), td2, is_daemon)
             test_root: Path = Path(td2) / "Work1" / "images" / "w1-ig1"
@@ -87,8 +86,9 @@ def test_debag(is_daemon: bool):
                 assert Path.exists(extracted_bag_images / "w1-ig1" / f"ig1{i:0>4}.images.txt")
             assert Path.exists(Path(td2) / "bags")
 
+
 # search a path for subdirectories whose names contain any of the strings in a list of strings
-def get_dirs_for_image_groups(search_work:Path, image_groups:[str]) -> [str]:
+def get_dirs_for_image_groups(search_work: Path, image_groups: [str]) -> [str]:
     """
     :param search_work:
     :param image_groups:
@@ -101,13 +101,14 @@ def get_dirs_for_image_groups(search_work:Path, image_groups:[str]) -> [str]:
     for media_dir in search_work.iterdir():
         for ig_dir in media_dir.iterdir():
             if ig_dir.is_dir() and any(s in ig_dir.name for s in image_groups):
-                matching_dirs.add(str(media_dir))
+                matching_dirs.add(media_dir.name)
     return list(matching_dirs)
 
-def invert_work(input_root:Path,  output_root: Path, media_types:[str]) :
+
+def invert_work(input_root: Path, output_root: Path, media_types: [str]):
     """
     Inverts the media types and image groups in a tree
-    :param input_root: parent of media folders (e.g. work source
+    :param input_root: parent of media folders (e.g. work source)
     :param output_root: Destination. Must exist on call
     :param media_types: list of child folders of input_root that are to be inverted
     :return: A modified folder structure of input_root: Note that 'sources' is unmodified
@@ -156,14 +157,14 @@ def invert_work(input_root:Path,  output_root: Path, media_types:[str]) :
     for child_dir in os.listdir(input_root):
         cdp: Path = Path(child_dir)
         if cdp.name in media_types:
-            media = cdp.name
+            media_name = cdp.name
             # for media in media_types:
-            media_path = os.path.join(input_root, media)
+            media_path = os.path.join(input_root, media_name)
             if os.path.exists(media_path):
                 for item in os.listdir(media_path):
                     item_path = os.path.join(media_path, item)
                     if os.path.isdir(item_path):
-                        new_path = os.path.join(output_root, item, media)
+                        new_path = os.path.join(output_root, item, media_name)
                         # does copytree create the new path
                         shutil.copytree(item_path, new_path)
                         # os.makedirs(new_path, exist_ok=True)
@@ -183,14 +184,14 @@ def test_inverted():
     """
     # in production, use archive_ops.api.get_volumes_in_work()
     # import archive_ops.api
-    image_groups:[str] = ["ig1", "ig2"]
-    dirs_by_image_group = get_dirs_for_image_groups(test_bag_work, image_groups)
+    image_groups: [str] = ["ig1", "ig2"]
+    media_with_image_group = get_dirs_for_image_groups(test_bag_work, image_groups)
     with TemporaryDirectory() as td:
         inverted_work = Path(td) / "Inverted"
         os.makedirs(inverted_work, exist_ok=True)
-        invert_work(test_bag_work, inverted_work, media)
+        invert_work(test_bag_work, inverted_work, media_with_image_group)
         for i in range(1, 3):
-            for j in range(1,4):
+            for j in range(1, 4):
                 assert Path.exists(inverted_work / f"w1-ig{i}" / "images" / f"ig{i}000{j}.images.txt")
                 assert Path.exists(inverted_work / f"w1-ig{i}" / "archive" / f"ig{i}000{j}.archive.txt")
         assert Path.exists(inverted_work / "sources" / "sources_files1" / "sources10001.txt")
@@ -200,20 +201,16 @@ def test_inverted():
 def test_segmented():
     """
     Test internal of appending bags to a zipped bag.
-    :param do_append:append to existing file?
-    :type do_append:bool
-    :param append_to_name:where to append to
-    :type append_to_name:Path
     :return:
     """
     assert Path.exists(test_bag_work)
     # Make a destination
     td = tempfile.mkdtemp()
-#     with TemporaryDirectory(dir=append_to_name) as td:
+    #     with TemporaryDirectory(dir=append_to_name) as td:
     bag_parent_path = Path(td)
 
     # exclude list, for later
-    exclude_list:[] = []
+    exclude_list: [] = []
     #
     # create bags for media subdirs of test_bag_work
     # TODO: next, test inverted media
@@ -222,10 +219,9 @@ def test_segmented():
         if not os.path.exists(to_bag):
             continue
         bag_ops.bag(str(to_bag), str(bag_parent_path), True, in_daemon=False, do_append=False)
-        assert Path.exists(bag_parent_path /f"{medium}.bag.zip")
+        assert Path.exists(bag_parent_path / f"{medium}.bag.zip")
         exclude_list.append(test_bag_work / medium)
     assert bag_parent_path.is_dir()
-
 
     # Build a bag out of the other things
     # Append the bag to a named zip in the directory
@@ -235,7 +231,8 @@ def test_segmented():
         non_wig_path: Path = Path(non_wig_media)
         if non_wig_media in media:
             continue
-        bag_ops.bag(str(test_bag_work / non_wig_path), str(bag_parent_path), True, in_daemon=False, do_append=True,append_dest = append_dest)
+        bag_ops.bag(str(test_bag_work / non_wig_path), str(bag_parent_path), True, in_daemon=False, do_append=True,
+                    append_dest=append_dest)
     assert Path.exists(bag_parent_path)
     assert bag_parent_path.is_dir()
 
@@ -250,7 +247,7 @@ def test_segmented():
         # bag_ops.debag(str(append_dest), td2, False)
 
         # Find the images
-        extracted_bag_images = Path(td2,  "images")
+        extracted_bag_images = Path(td2, "images")
         for i in range(1, 3):
             assert Path.exists(extracted_bag_images / "w1-ig1" / f"ig1{i:0>4}.images.txt")
 
