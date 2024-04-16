@@ -1,11 +1,12 @@
 [build-system]
 requires = ["setuptools", "wheel"]
+# See setup.cfg for the project configuration
 build-backend = "setuptools.build_meta"
 
 # Since we're using setuptools, this is all specified in setup.py
-[project]
+ [project]
 name = "bdrc-bag"
-version = "0.0.03"
+version = "0.0.04"
 authors = [
     { name="Jim Katz", email="jim@tbrc.org" },
 ]
@@ -19,6 +20,7 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
 ]
+
 
 # [ In setup, these are called entry_points, but not here ]
 [project.scripts]
