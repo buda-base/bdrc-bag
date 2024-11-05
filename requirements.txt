@@ -1,3 +1,2 @@
 # Make sure this matches pyproject.toml dependencies
-bdrc-util
 bagit

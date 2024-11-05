@@ -7,19 +7,29 @@ Given a Zip Archive file containing a bag,
 3. If it validates, move the payload in "data" to the specified output.
 Usage: unzip-debag bag_archive_location data_location Top_level_article_name
 """
-import tempfile
-
-
-
-import os
-
-from pathlib import Path
+import logging
 
 import argparse
-import logging
-from . import bag_ops
+from typing import Any, AnyStr
 
-from util_lib.utils import reallypath
+from bag.bag_ops import *
+
+def reallypath(what_path: AnyStr) ->  Any:
+    """
+    Resolves everything about the path
+    :param what_path: Pathlike object
+    :return: fully resolved path
+    """
+    from os import path
+
+    # jimk #499: detect non-file paths and don't expand
+    if what_path is None:
+        return None
+    # Regex more elegant, but need fast way to say UNCs must be at beginning
+    if what_path.find('://') > 0 or what_path.startswith('//') or what_path.startswith('\\'):
+        return what_path
+
+    return path.realpath(path.expandvars(path.expanduser(what_path)))
 
 logger = logging.getLogger(__name__)
 
@@ -28,23 +38,23 @@ def must_exist_directory(path_str: str):
     """
     Argparse type specifying a string which represents
     an existing file path
-    :param path:
+    :param path_str: String repr of a path
     :return:
     """
     real_path: Path = reallypath(path_str)
     if not os.path.exists(real_path):
-        logging.error(f"{str(real_path)} not found")
-        raise argparse.ArgumentError(f"{str(real_path)} not found")
+        logger.error(f"{str(real_path)} not found")
+        raise argparse.ArgumentError(message="{str(real_path)} not found")
     if not os.path.isdir(real_path):
-        logging.error(f"{str(real_path)} not a directory")
-        raise argparse.ArgumentError(f"{str(real_path)} not a directory")
+        logger.error(f"{str(real_path)} not a directory")
+        raise argparse.ArgumentError(message= f"{str(real_path)} not a directory")
     if not os.access(real_path, os.F_OK):
-        logging.error(f"{str(real_path)} not accessible")
-        raise argparse.ArgumentError(f"{str(real_path)} not accessible")
+        logger.error(f"{str(real_path)} not accessible")
+        raise argparse.ArgumentError(message= f"{str(real_path)} not accessible")
     if not os.access(real_path, os.R_OK or os.W_OK or os.X_OK):
         logging.error(f"{str(real_path)} not a writable directory")
-        raise argparse.ArgumentError(f"{str(real_path)} not a writable directory")
-
+        raise argparse.ArgumentError(message= f"{str(real_path)} not a writable directory")
+    return real_path
 
 def parse_args() -> argparse.Namespace:
     """
@@ -61,7 +71,7 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("-t", "--tempdir", help="Override system temporary directory. Created if not exists")
     ap.add_argument("-i", "--in-daemon", help="We're in a daemon, so don't multiprocess - DONT USE ON COMMAND LINE!", action='store_true')
 
-    ap.add_argument("src", help="Source directory, if bagging, source zip if debagging")
+    ap.add_argument("src", help="Source directory, if bagging, source zip if debagging", type=must_exist_directory)
     ap.add_argument("dst", help="if bagging, container for zipped bag. If debagging, container for work")
     # Not required until we debag any bags, not just ours
     #    ap.add_argument("work_name", help="Work Name (RID) - required for bagging, optional if debagging", nargs="*")
@@ -164,9 +174,9 @@ def main():
     check_space(_args.src, _args.dst, tempfile.gettempdir(), _args.preserve & _args.bag)
 
     if _args.debag:
-        bag_ops.debag(_args.src, _args.dst, _args.in_daemon)
+        debag(_args.src, _args.dst, _args.in_daemon)
     if _args.bag:
-        bag_ops.bag(_args.src, _args.dst, _args.preserve, _args.in_daemon)
+        bag(_args.src, _args.dst, _args.preserve, _args.in_daemon)
 
 
 if __name__ == "__main__":
