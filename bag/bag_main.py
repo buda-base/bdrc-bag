@@ -71,7 +71,7 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("-t", "--tempdir", help="Override system temporary directory. Created if not exists")
     ap.add_argument("-i", "--in-daemon", help="We're in a daemon, so don't multiprocess - DONT USE ON COMMAND LINE!", action='store_true')
 
-    ap.add_argument("src", help="Source directory, if bagging, source zip if debagging", type=must_exist_directory)
+    ap.add_argument("src", help="Source directory, if bagging, source zip if debagging")
     ap.add_argument("dst", help="if bagging, container for zipped bag. If debagging, container for work")
     # Not required until we debag any bags, not just ours
     #    ap.add_argument("work_name", help="Work Name (RID) - required for bagging, optional if debagging", nargs="*")
