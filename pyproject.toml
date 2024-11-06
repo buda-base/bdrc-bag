@@ -4,9 +4,9 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 # Since we're using setuptools, this is all specified in setup.py
- [project]
+[project]
 name = "bdrc-bag"
-version = "0.0.05"
+version = "0.0.06"
 authors = [
     { name="Jim Katz", email="jim@tbrc.org" },
 ]
@@ -21,6 +21,14 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+# github copilot first suggestion - failed
+#[tool.setuptools.packages.find]
+#where = ["bag"]
+
+# github copilot second suggestion
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["bag*"]
 
 # [ In setup, these are called entry_points, but not here ]
 [project.scripts]
