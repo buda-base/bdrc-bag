@@ -1,12 +1,12 @@
 [build-system]
 requires = ["setuptools", "wheel"]
-# See setup.cfg for the project configuration
+
 build-backend = "setuptools.build_meta"
 
 # Since we're using setuptools, this is all specified in setup.py
 [project]
 name = "bdrc-bag"
-version = "0.0.06"
+version = "0.0.07"
 authors = [
     { name="Jim Katz", email="jim@tbrc.org" },
 ]

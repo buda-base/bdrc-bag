@@ -73,7 +73,7 @@ def validate_bag(test_bag: bagit.Bag, bag_errors_p: [()], n_processes: int) -> b
             if isinstance(d, bagit.UnexpectedFile):
                 bag_errors_p.append(("UnexpectedFile", str(d)))
             else:
-                bag_errors_p.append("UnknownError", str(d))
+                bag_errors_p.append(("UnknownError", str(d)))
 
     return len(bag_errors_p) == 0
 
