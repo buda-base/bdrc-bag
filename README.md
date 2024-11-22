@@ -60,6 +60,7 @@ Installing bdrc-bag utility on Synology NAS
 # Changelog
 | version | commit                                                                                               | description                                              |
 |---------|------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
-| 0.0.06  | [b6b0f13](https://github.com/buda-base/bdrc-bag/commit/b6b0f139eed92316083098eeb963c46cec398209) | transition to standalone and pyproject.toml installation | 
+| 0.0.07  | [67985c1](https://github.com/buda-base/bdrc-bag/commit/67985c1a9c734155f266ea04e088eae506a75cb0)     | fix error handling bug                                   | 
+| 0.0.06  | [b6b0f13](https://github.com/buda-base/bdrc-bag/commit/b6b0f139eed92316083098eeb963c46cec398209)     | transition to standalone and pyproject.toml installation | 
 | 0.0.04  | [d9d656df](https://github.com/buda-base/archive-ops/commit/d9d656df90e5db0fd8cacff81e002b6a56609111) | Incrementally add a bag to its zip                       | 
 | 0.0.03  | [ec875566](https://github.com/buda-base/archive-ops/commit/ec875566a0c389da6af4c5583ba8182f45a47c59) | Support single process to run in docker                  | 
